@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>手速测试 · 清新版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
+.wrap{width:100vw;height:100vh;display:flex;flex-direction:column;}
+.head{padding:18px;text-align:center;}
+.head h1{font-size:22px;color:#2d3748;margin-bottom:6px;}
+.head p{color:#718096;font-size:14px;}
+.area{flex:1;margin:12px;background:#ffffff;border-radius:20px;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.05);}
+.point{width:56px;height:56px;background:#e53e3e;border-radius:50%;position:absolute;transform:translate(-50%,-50%);display:none;}
+.result{padding:16px;text-align:center;}
+.item{font-size:15px;color:#4a5568;margin:3px 0;}
+.avg{font-size:19px;color:#2b6cb0;font-weight:bold;margin:10px 0;}
+.btn{border:none;background:#4299e1;color:#fff;padding:12px 28px;border-radius:12px;font-size:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>反应力测试</h1>
+    <p>点击随机红点 | 共5轮</p>
+    <p id="tip">剩余：5 次</p>
+  </div>
+  <div class="area" id="gameArea">
+    <div class="point" id="dot"></div>
+  </div>
+  <div class="result">
+    <div id="list"></div>
+    <div class="avg" id="avgBox"></div>
+    <button class="btn" id="resetBtn" style="display:none" onclick="startGame()">重新测试</button>
+  </div>
+</div>
+
+<script>
+const gameArea = document.getElementById('gameArea');
+const dot = document.getElementById('dot');
+const tip = document.getElementById('tip');
+const list = document.getElementById('list');
+const avgBox = document.getElementById('avgBox');
+const resetBtn = document.getElementById('resetBtn');
+
+const maxRound = 5;
+let nowRound = 0;
+let timeArr = [];
+let startTime = 0;
+let locked = false;
+
+function startGame(){
+  nowRound = 0;
+  timeArr = [];
+  list.innerHTML = '';
+  avgBox.innerText = '';
+  resetBtn.style.display = 'none';
+  tip.innerText = `剩余：${maxRound} 次`;
+  setTimeout(createPoint,700);
+}
+
+function createPoint(){
+  locked = false;
+  const w = gameArea.clientWidth;
+  const h = gameArea.clientHeight;
+  const size = 56;
+  let x = Math.random()*(w - size) + size/2;
+  let y = Math.random()*(h - size) + size/2;
+  dot.style.left = x + 'px';
+  dot.style.top = y + 'px';
+  dot.style.display = 'block';
+  startTime = Date.now();
+}
+
+dot.onclick = function(){
+  if(locked)return;
+  locked = true;
+  let t = Date.now() - startTime;
+  nowRound++;
+  timeArr.push(t);
+  dot.style.display = 'none';
+
+  let div = document.createElement('div');
+  div.className = 'item';
+  div.innerText = `第${nowRound}轮：${t} ms`;
+  list.appendChild(div);
+  tip.innerText = `剩余：${maxRound - nowRound} 次`;
+
+  if(nowRound >= maxRound){
+    calcAvg();
+  }else{
+    setTimeout(createPoint,550);
+  }
+};
+
+function calcAvg(){
+  let sum = timeArr.reduce((a,b)=>a+b,0);
+  let avg = (sum / maxRound).toFixed(0);
+  avgBox.innerText = `平均反应：${avg} 毫秒`;
+  resetBtn.style.display = 'inline-block';
+}
+window.onload = startGame;
+</script>
+</body>
+</html>
